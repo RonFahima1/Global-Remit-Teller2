@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { Keyboard, X } from "lucide-react";
+import LoadingOverlay from "@/components/ui/LoadingOverlay";
 
 const shortcuts = {
   global: [
@@ -28,6 +29,7 @@ const shortcuts = {
 
 export function KeyboardShortcuts() {
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [navLoading, setNavLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -39,21 +41,22 @@ export function KeyboardShortcuts() {
 
       // Global shortcuts
       if (e.metaKey || e.ctrlKey) {
+        let navPath: string | null = null;
         switch (e.key) {
           case "1":
-            router.push("/dashboard");
+            navPath = "/dashboard";
             break;
           case "2":
-            router.push("/send-money");
+            navPath = "/send-money";
             break;
           case "3":
-            router.push("/clients");
+            navPath = "/clients";
             break;
           case "4":
-            router.push("/transactions");
+            navPath = "/transactions";
             break;
           case "n":
-            router.push("/clients/new");
+            navPath = "/clients/new";
             break;
           case "s":
             const searchInput = document.querySelector('[data-tour="search"]') as HTMLInputElement;
@@ -77,57 +80,66 @@ export function KeyboardShortcuts() {
             }
             break;
         }
+        if (navPath) {
+          setNavLoading(true);
+          setTimeout(() => {
+            window.location.href = navPath!;
+          }, 50);
+        }
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [router]);
+  }, []);
 
   return (
-    <Dialog open={showShortcuts} onOpenChange={setShowShortcuts}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Keyboard className="h-5 w-5" />
-            Keyboard Shortcuts
-          </DialogTitle>
-        </DialogHeader>
-        <Command>
-          <CommandList>
-            <CommandGroup heading="Global">
-              {shortcuts.global.map((shortcut) => (
-                <CommandItem key={shortcut.key} className="flex justify-between">
-                  <span>{shortcut.description}</span>
-                  <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700">
-                    {shortcut.key}
-                  </kbd>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-            <CommandGroup heading="Navigation">
-              {shortcuts.navigation.map((shortcut) => (
-                <CommandItem key={shortcut.key} className="flex justify-between">
-                  <span>{shortcut.description}</span>
-                  <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700">
-                    {shortcut.key}
-                  </kbd>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-            <CommandGroup heading="Actions">
-              {shortcuts.actions.map((shortcut) => (
-                <CommandItem key={shortcut.key} className="flex justify-between">
-                  <span>{shortcut.description}</span>
-                  <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700">
-                    {shortcut.key}
-                  </kbd>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </DialogContent>
-    </Dialog>
+    <>
+      {navLoading && <LoadingOverlay />}
+      <Dialog open={showShortcuts} onOpenChange={setShowShortcuts}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Keyboard className="h-5 w-5" />
+              Keyboard Shortcuts
+            </DialogTitle>
+          </DialogHeader>
+          <Command>
+            <CommandList>
+              <CommandGroup heading="Global">
+                {shortcuts.global.map((shortcut) => (
+                  <CommandItem key={shortcut.key} className="flex justify-between">
+                    <span>{shortcut.description}</span>
+                    <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700">
+                      {shortcut.key}
+                    </kbd>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+              <CommandGroup heading="Navigation">
+                {shortcuts.navigation.map((shortcut) => (
+                  <CommandItem key={shortcut.key} className="flex justify-between">
+                    <span>{shortcut.description}</span>
+                    <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700">
+                      {shortcut.key}
+                    </kbd>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+              <CommandGroup heading="Actions">
+                {shortcuts.actions.map((shortcut) => (
+                  <CommandItem key={shortcut.key} className="flex justify-between">
+                    <span>{shortcut.description}</span>
+                    <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700">
+                      {shortcut.key}
+                    </kbd>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 } 

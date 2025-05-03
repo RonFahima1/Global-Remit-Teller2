@@ -35,17 +35,42 @@ import {
   type ReportData,
 } from "@/services/reports";
 import { BarChart, PieChart } from "@/components/ui/chart";
+import { Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 type ChartData = {
   name: string;
   value: number;
 };
 
+const mockReports = [
+  { id: 1, date: '2024-03-15', type: 'remittance', client: 'Jane Smith', amount: 500, status: 'completed' },
+  { id: 2, date: '2024-03-14', type: 'exchange', client: 'Alex Morgan', amount: 200, status: 'pending' },
+  { id: 3, date: '2024-03-14', type: 'remittance', client: 'Jane Smith', amount: 300, status: 'completed' },
+];
+
+function exportToCSV(data: any[], filename: string) {
+  const csv = [
+    Object.keys(data[0]).join(","),
+    ...data.map(row => Object.values(row).join(","))
+  ].join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function ReportsPage() {
   const [loading, setLoading] = useState(false);
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const { t } = useTranslation();
   const { register, handleSubmit, watch } = useForm<ReportFilter>();
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [type, setType] = useState('all');
+  const [client, setClient] = useState('');
 
   const onSubmit = async (data: ReportFilter) => {
     setLoading(true);
@@ -71,296 +96,106 @@ export default function ReportsPage() {
     }
   };
 
+  const filtered = mockReports.filter(r => {
+    if (dateFrom && r.date < dateFrom) return false;
+    if (dateTo && r.date > dateTo) return false;
+    if (type !== 'all' && r.type !== type) return false;
+    if (client && !r.client.toLowerCase().includes(client.toLowerCase())) return false;
+    return true;
+  });
+
+  // Group by date for chart
+  const chartData = Object.values(
+    filtered.reduce((acc, r) => {
+      acc[r.date] = acc[r.date] || { date: r.date, volume: 0 };
+      acc[r.date].volume += r.amount;
+      return acc;
+    }, {} as Record<string, { date: string; volume: number }>)
+  ).sort((a, b) => a.date.localeCompare(b.date));
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-4">Reports</h1>
+      <div className="flex flex-wrap gap-4 items-end mb-6">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {t("reports.title")}
-          </h1>
-          <p className="text-[15px] text-muted-foreground">
-            {t("reports.description")}
-          </p>
+          <label className="block text-xs font-medium mb-1">Date From</label>
+          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="border rounded px-2 py-1 text-sm" />
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleExport("csv")}
-            disabled={!reportData}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            {t("reports.exportCsv")}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleExport("pdf")}
-            disabled={!reportData}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            {t("reports.exportPdf")}
-          </Button>
+        <div>
+          <label className="block text-xs font-medium mb-1">Date To</label>
+          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="border rounded px-2 py-1 text-sm" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium mb-1">Type</label>
+          <select value={type} onChange={e => setType(e.target.value)} className="border rounded px-2 py-1 text-sm">
+            <option value="all">All</option>
+            <option value="remittance">Remittance</option>
+            <option value="exchange">Exchange</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-medium mb-1">Client</label>
+          <input type="text" value={client} onChange={e => setClient(e.target.value)} placeholder="Client name" className="border rounded px-2 py-1 text-sm" />
+        </div>
+        <button
+          className="px-4 py-2 bg-blue-600 text-white rounded"
+          onClick={() => filtered.length && exportToCSV(filtered, 'report.csv')}
+        >
+          Export CSV
+        </button>
+        <button className="px-4 py-2 bg-gray-200 text-gray-800 rounded">Export PDF</button>
+      </div>
+      <div className="mb-8">
+        <div className="bg-white rounded-lg border p-4 mb-4">
+          <div className="font-semibold mb-2">Summary</div>
+          <div className="flex gap-8">
+            <div>Total Volume: <b>${filtered.reduce((sum, r) => sum + r.amount, 0).toLocaleString()}</b></div>
+            <div>Transactions: <b>{filtered.length}</b></div>
+          </div>
+        </div>
+        <div className="bg-white rounded-lg border p-4">
+          <div className="font-semibold mb-2">Transaction Volume (Bar Chart)</div>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 16, right: 16, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="volume" fill="#2563eb" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("reports.filters")}</CardTitle>
-          <CardDescription>{t("reports.filtersDescription")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  {t("reports.startDate")}
-                </label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !watch("startDate") && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {watch("startDate") ? (
-                        format(watch("startDate") as Date, "PPP")
-                      ) : (
-                        <span>{t("reports.pickDate")}</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={watch("startDate")}
-                      onSelect={(date) =>
-                        register("startDate").onChange({
-                          target: { value: date },
-                        })
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  {t("reports.endDate")}
-                </label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !watch("endDate") && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {watch("endDate") ? (
-                        format(watch("endDate") as Date, "PPP")
-                      ) : (
-                        <span>{t("reports.pickDate")}</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={watch("endDate")}
-                      onSelect={(date) =>
-                        register("endDate").onChange({
-                          target: { value: date },
-                        })
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  {t("reports.type")}
-                </label>
-                <Select
-                  onValueChange={(value) =>
-                    register("type").onChange({
-                      target: { value },
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("reports.allTypes")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="send">{t("reports.typeSend")}</SelectItem>
-                    <SelectItem value="receive">
-                      {t("reports.typeReceive")}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  {t("reports.status")}
-                </label>
-                <Select
-                  onValueChange={(value) =>
-                    register("status").onChange({
-                      target: { value },
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("reports.allStatuses")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="completed">
-                      {t("reports.statusCompleted")}
-                    </SelectItem>
-                    <SelectItem value="pending">
-                      {t("reports.statusPending")}
-                    </SelectItem>
-                    <SelectItem value="failed">
-                      {t("reports.statusFailed")}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <Button type="submit" disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {t("reports.generate")}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-
-      {reportData && (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("reports.summary")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <dl className="space-y-4">
-                <div>
-                  <dt className="text-sm font-medium text-muted-foreground">
-                    {t("reports.totalTransactions")}
-                  </dt>
-                  <dd className="text-2xl font-bold">
-                    {reportData.totalTransactions}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-medium text-muted-foreground">
-                    {t("reports.totalAmount")}
-                  </dt>
-                  <dd className="text-2xl font-bold">
-                    ${reportData.totalAmount.toLocaleString()}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-medium text-muted-foreground">
-                    {t("reports.averageAmount")}
-                  </dt>
-                  <dd className="text-2xl font-bold">
-                    ${reportData.averageAmount.toLocaleString()}
-                  </dd>
-                </div>
-              </dl>
-            </CardContent>
-          </Card>
-
-          <Card className="col-span-2">
-            <CardHeader>
-              <CardTitle>{t("reports.dailyTransactions")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <BarChart
-                data={reportData.dailyTransactions.map((day) => ({
-                  name: format(new Date(day.date), "MMM d"),
-                  value: day.count,
-                }))}
-                index="name"
-                categories={["value"]}
-                colors={["primary"]}
-                valueFormatter={(value: number) => `${value} transactions`}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("reports.transactionsByType")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PieChart
-                data={Object.entries(reportData.transactionsByType).map(
-                  ([key, value]) => ({
-                    name: key,
-                    value,
-                  })
-                )}
-                index="name"
-                categories={["value"]}
-                colors={["primary", "secondary"]}
-                valueFormatter={(value: number) => `${value} transactions`}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("reports.transactionsByStatus")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PieChart
-                data={Object.entries(reportData.transactionsByStatus).map(
-                  ([key, value]) => ({
-                    name: key,
-                    value,
-                  })
-                )}
-                index="name"
-                categories={["value"]}
-                colors={["success", "warning", "destructive"]}
-                valueFormatter={(value: number) => `${value} transactions`}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("reports.transactionsByCurrency")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PieChart
-                data={Object.entries(reportData.transactionsByCurrency).map(
-                  ([key, value]) => ({
-                    name: key,
-                    value,
-                  })
-                )}
-                index="name"
-                categories={["value"]}
-                colors={["primary", "secondary", "accent", "muted"]}
-                valueFormatter={(value: number) => `${value} transactions`}
-              />
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      <div className="bg-white rounded-lg border p-4">
+        <div className="font-semibold mb-2">Report Table</div>
+        <table className="w-full text-sm">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="p-2">Date</th>
+              <th className="p-2">Type</th>
+              <th className="p-2">Client</th>
+              <th className="p-2">Amount</th>
+              <th className="p-2">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(r => (
+              <tr key={r.id} className="border-t">
+                <td className="p-2">{r.date}</td>
+                <td className="p-2 capitalize">{r.type}</td>
+                <td className="p-2">{r.client}</td>
+                <td className="p-2">{r.amount.toLocaleString()}</td>
+                <td className="p-2 capitalize">{r.status}</td>
+              </tr>
+            ))}
+            {filtered.length === 0 && (
+              <tr><td colSpan={5} className="text-center text-gray-400 py-4">No data found.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 } 

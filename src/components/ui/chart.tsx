@@ -386,7 +386,7 @@ interface ChartProps {
 export function BarChart({
   data,
   index,
-  categories,
+  categories = [],
   colors,
   valueFormatter,
 }: ChartProps) {
@@ -402,7 +402,7 @@ export function BarChart({
               valueFormatter ? valueFormatter(value) : value
             }
           />
-          {categories.map((category: string, i: number) => (
+          {(categories ?? []).map((category: string, i: number) => (
             <Bar
               key={category}
               dataKey={category}

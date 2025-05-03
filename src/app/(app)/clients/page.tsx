@@ -157,6 +157,17 @@ export default function ClientsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* New Client Button at the bottom using the same pattern */}
+      <div className="flex justify-end mt-6">
+        <CustomerSearch
+          onSearch={() => {}}
+          showNewButton={true}
+          newButtonText="New Client"
+          newButtonLink="/clients/new"
+          hideSearch={true} // Custom prop to hide search fields if supported
+        />
+      </div>
     </div>
   );
 }

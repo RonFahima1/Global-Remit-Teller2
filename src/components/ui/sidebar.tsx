@@ -4,7 +4,11 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft } from "lucide-react"
+import { PanelLeft, ChevronDown, ChevronRight, BarChart2, ShieldCheck } from "lucide-react"
+import Link from "next/link"
+import { Home, Send, RefreshCw, Users, DollarSign, List, CreditCard, Settings, Building2, Coins, UserCog, Shield, Cog } from "lucide-react"
+import { usePathname } from "next/navigation"
+import { useState } from "react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -19,12 +23,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import LoadingOverlay from '@/components/ui/LoadingOverlay'
+import { useCurrentUser, canViewReports, canApproveKYC } from '@/context/CurrentUserContext'
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "16rem"
+const SIDEBAR_WIDTH = "20rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
-const SIDEBAR_WIDTH_ICON = "3.5rem" // Increased icon width slightly
+const SIDEBAR_WIDTH_ICON = "4rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
 type SidebarContext = {
@@ -46,6 +52,28 @@ function useSidebar() {
   }
   return context
 }
+
+const settingsLinks = [
+  { href: "/settings/branches", label: "Branch Management" },
+  { href: "/settings/currencies", label: "Currency & Rate Management" },
+];
+
+const navLinks = [
+  { href: "/dashboard", label: "Home", icon: Home },
+  { href: "/send-money", label: "Send Money", icon: Send },
+  { href: "/currency-exchange", label: "Currency Exchange", icon: RefreshCw },
+  { href: "/client-balance", label: "Client Balance", icon: Users },
+  { href: "/cash-register", label: "Cash Register", icon: DollarSign },
+  { href: "/transactions", label: "Transactions", icon: List },
+  { href: "/payout", label: "Payout", icon: CreditCard },
+  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/admin", label: "Administration", icon: Cog }, // Always visible!
+];
+
+const mockUser = {
+  name: 'Alex Morgan',
+  avatar: '', // You can use a placeholder or real avatar URL
+};
 
 // Add SidebarProvider implementation
 const SidebarProvider = React.forwardRef<
@@ -70,6 +98,9 @@ const SidebarProvider = React.forwardRef<
   ) => {
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
+    const [navLoading, setNavLoading] = React.useState(false);
+    const [expandedMenus, setExpandedMenus] = React.useState<{ [label: string]: boolean }>({});
+    const user = useCurrentUser();
 
     // This is the internal state of the sidebar.
     // We use openProp and setOpenProp for control from outside the component.
@@ -148,7 +179,122 @@ const SidebarProvider = React.forwardRef<
             ref={ref}
             {...props}
           >
-            {children}
+            {navLoading && <LoadingOverlay />}
+            {/* Top Bar for Mobile */}
+            {isMobile && (
+              <div className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between h-14 px-4 bg-white/80 dark:bg-[#18181b]/80 backdrop-blur-xl border-b border-white/30 dark:border-white/10 shadow-md">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full"
+                  onClick={toggleSidebar}
+                  aria-label="Open sidebar"
+                >
+                  <PanelLeft className="h-6 w-6" />
+                </Button>
+                <span className="text-xl font-bold text-blue-600 tracking-tight">GR</span>
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold">
+                    {mockUser.avatar ? (
+                      <img src={mockUser.avatar} alt="avatar" className="h-8 w-8 rounded-full object-cover" />
+                    ) : (
+                      mockUser.name[0]
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Sidebar UI */}
+            <aside
+              className={cn(
+                "fixed z-30 top-0 left-0 h-full bg-white/80 dark:bg-[#18181b]/80 backdrop-blur-xl border-r border-white/30 dark:border-white/10 shadow-2xl transition-all duration-300 rounded-r-2xl",
+                "flex flex-col items-center py-8 gap-4",
+                "w-20 md:w-80",
+                open ? "md:w-80" : "md:w-20",
+                isMobile && !openMobile && "-translate-x-full",
+                isMobile && openMobile && "translate-x-0",
+                "md:translate-x-0"
+              )}
+              style={{ width: open ? SIDEBAR_WIDTH : SIDEBAR_WIDTH_ICON }}
+              data-state={state}
+            >
+              {/* Logo or App Name (hidden on mobile) */}
+              <div className="mb-10 flex items-center justify-center w-full md:block hidden">
+                <span className="text-2xl font-bold text-blue-600 tracking-tight">GR</span>
+              </div>
+              {/* Navigation Links */}
+              <nav className="flex flex-col gap-3 w-full px-4 mt-4 md:mt-0">
+                {navLinks.slice(0, 7).map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-4 rounded-xl px-4 py-3 font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-100/60 dark:hover:bg-blue-900/40 transition-all duration-150 group relative",
+                      open ? "justify-start" : "justify-center"
+                    )}
+                  >
+                    <item.icon className="h-7 w-7" />
+                    {open && <span className="ml-3 text-lg">{item.label}</span>}
+                  </Link>
+                ))}
+                {/* Section separator */}
+                <div className="my-3 border-t border-gray-200 dark:border-gray-700 w-full" />
+                {/* Settings & Administration */}
+                {navLinks.slice(7).map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-4 rounded-xl px-4 py-3 font-semibold text-gray-700 dark:text-gray-200 hover:bg-blue-100/60 dark:hover:bg-blue-900/40 transition-all duration-150 group relative",
+                      open ? "justify-start" : "justify-center"
+                    )}
+                  >
+                    <item.icon className="h-7 w-7" />
+                    {open && <span className="ml-3 text-lg">{item.label}</span>}
+                  </Link>
+                ))}
+              </nav>
+              {/* User Avatar/Profile (desktop only) */}
+              <div className="mt-auto w-full flex flex-col items-center gap-2 pb-4 md:block hidden">
+                <div className="flex flex-col items-center gap-1 mb-2">
+                  <div className="h-10 w-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold">
+                    {mockUser.avatar ? (
+                      <img src={mockUser.avatar} alt="avatar" className="h-10 w-10 rounded-full object-cover" />
+                    ) : (
+                      mockUser.name[0]
+                    )}
+                  </div>
+                  {open && <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{mockUser.name}</span>}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full"
+                  onClick={toggleSidebar}
+                  aria-label="Toggle sidebar"
+                >
+                  <PanelLeft className="h-6 w-6" />
+                </Button>
+              </div>
+              {/* Sidebar Toggle Button (mobile only) */}
+              {isMobile && (
+                <div className="mt-auto w-full flex justify-center pb-4 md:hidden">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full"
+                    onClick={toggleSidebar}
+                    aria-label="Toggle sidebar"
+                  >
+                    <PanelLeft className="h-6 w-6" />
+                  </Button>
+                </div>
+              )}
+            </aside>
+            {/* Main content (children) */}
+            <div className={cn("flex-1 transition-all duration-300", isMobile ? "pt-14" : "ml-16 md:ml-64")}> {/* Add top padding for mobile top bar */}
+              {children}
+            </div>
           </div>
         </TooltipProvider>
       </SidebarContext.Provider>

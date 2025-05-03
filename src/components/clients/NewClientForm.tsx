@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Controller, useForm } from 'react-hook-form';
@@ -19,51 +18,61 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 
 
 // Define the Zod schema for form validation
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB example limit
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "application/pdf"];
 
-const fileSchema = z.instanceof(FileList)
-  .optional()
-  .refine((files) => !files || files.length === 0 || files[0].size <= MAX_FILE_SIZE, `Max file size is 5MB.`)
-  .refine(
-    (files) => !files || files.length === 0 || ACCEPTED_IMAGE_TYPES.includes(files[0].type),
-    "Only .jpg, .jpeg, .png, .webp and .pdf formats are supported."
-  );
+const fileSchema = z.any().optional().refine(
+  (files) => {
+    if (!files || files.length === 0) return true;
+    const file = files[0];
+    if (!file) return true;
+    if (typeof File !== 'undefined' && file instanceof File) {
+      if (file.size > MAX_FILE_SIZE) return false;
+      if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) return false;
+    }
+    return true;
+  },
+  {
+    message: `File must be under 5MB and of type: .jpg, .jpeg, .png, .webp, .pdf`,
+  }
+);
 
 const formSchema = z.object({
   // Personal Info
   firstName: z.string().min(1, "First name is required"),
   middleName: z.string().optional(),
   lastName: z.string().min(1, "Last name is required"),
-  dob: z.date({ required_error: "Date of birth is required" }),
-  gender: z.enum(["male", "female"], { required_error: "Gender is required" }),
+  dob: z.date({
+    required_error: "Date of birth is required",
+  }),
+  gender: z.enum(["male", "female"], {
+    required_error: "Gender is required",
+  }),
   nationality: z.string().min(1, "Nationality is required"),
 
   // Address
-  country: z.string().default("Israel"),
+  country: z.string().min(1, "Country is required"),
   streetAddress: z.string().min(1, "Street address is required"),
   city: z.string().min(1, "City is required"),
-  postalCode: z.string().optional(),
+  postalCode: z.string().min(1, "Postal code is required"),
 
   // Relationship
   employer: z.string().default("Global Remit Private"),
   division: z.string().default("No Billing 0 WalletGlobalPrivate"),
 
   // Contact Details
-  phoneNumber: z.string().min(10, { // Adjust min length based on Israeli numbers without +972
-    message: "Phone number seems too short.",
-  }).regex(/^\d{9,10}$/, { // Example: 9-10 digits after country code
-    message: "Invalid Israeli phone number format (9-10 digits required)."
-  }),
+  phoneNumber: z.string().min(1, "Phone number is required"),
   email: z.string().email("Invalid email address").optional().or(z.literal("")),
-  customerCard: z.string().optional(),
+  customerCard: z.string().optional().default(""),
 
   // Identification
   idType: z.string().min(1, "ID type is required"),
-  idIssuanceCountry: z.string().min(1, "Issuance country is required"),
+  idIssuanceCountry: z.string().min(1, "ID issuance country is required"),
   idNumber: z.string().min(1, "ID number is required"),
-  idExpiryDate: z.date({ required_error: "ID expiry date is required" }),
-  idIssueDate: z.date().optional(),
+  idExpiryDate: z.date({
+    required_error: "ID expiry date is required",
+  }),
+  idIssueDate: z.date().optional().default(new Date()),
 
   // Documents
   documentFile: fileSchema,
@@ -75,6 +84,7 @@ export type NewClientFormData = z.infer<typeof formSchema>;
 interface NewClientFormProps {
   onSubmit: (data: Omit<NewClientFormData, 'documentFile'>, files: Record<string, File | null>) => void; // Keep single file record
   isLoading?: boolean; // Added isLoading prop
+  initialData?: Partial<NewClientFormData>;
 }
 
 // Mock data for dropdowns
@@ -82,36 +92,43 @@ const nationalities = ["Israeli", "American", "British", "French", "German"]; //
 const idTypes = ["Passport", "National ID", "Driver's License"]; // Example
 const countries = ["Israel", "United States", "United Kingdom", "France", "Germany"]; // Example
 
-export function NewClientForm({ onSubmit, isLoading = false }: NewClientFormProps) {
+function getDefaultValues(initialData?: Partial<NewClientFormData>): NewClientFormData {
+  return {
+    firstName: initialData?.firstName ?? "",
+    middleName: initialData?.middleName ?? "",
+    lastName: initialData?.lastName ?? "",
+    dob: initialData?.dob ?? new Date(),
+    gender: initialData?.gender ?? "male",
+    nationality: initialData?.nationality ?? "",
+    country: initialData?.country ?? "Israel",
+    streetAddress: initialData?.streetAddress ?? "",
+    city: initialData?.city ?? "",
+    postalCode: initialData?.postalCode ?? "",
+    employer: initialData?.employer ?? "Global Remit Private",
+    division: initialData?.division ?? "No Billing 0 WalletGlobalPrivate",
+    phoneNumber: initialData?.phoneNumber ?? "",
+    email: initialData?.email ?? "",
+    customerCard: initialData?.customerCard ?? "",
+    idType: initialData?.idType ?? "",
+    idIssuanceCountry: initialData?.idIssuanceCountry ?? "",
+    idNumber: initialData?.idNumber ?? "",
+    idExpiryDate: initialData?.idExpiryDate ?? new Date(),
+    idIssueDate: initialData?.idIssueDate ?? new Date(),
+    documentFile: undefined,
+  };
+}
+
+export function NewClientForm({ onSubmit, isLoading = false, initialData }: NewClientFormProps) {
   // State to hold the actual File object
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const form = useForm<NewClientFormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      firstName: "",
-      middleName: "",
-      lastName: "",
-      dob: undefined,
-      gender: undefined,
-      nationality: "",
-      country: "Israel", // Pre-filled
-      streetAddress: "",
-      city: "",
-      postalCode: "",
-      employer: "Global Remit Private", // Pre-filled
-      division: "No Billing 0 WalletGlobalPrivate", // Pre-filled
-      phoneNumber: "",
-      email: "",
-      customerCard: "",
-      idType: "",
-      idIssuanceCountry: "",
-      idNumber: "",
-      idExpiryDate: undefined,
-      idIssueDate: undefined,
-      documentFile: undefined,
-    },
-    mode: "onChange", // Validate on change for better UX
+    defaultValues: getDefaultValues(initialData),
+  });
+
+  const handleSubmit = form.handleSubmit((values) => {
+    onSubmit(values, { documentFile: values.documentFile?.[0] || null });
   });
 
   // Handle file input changes
@@ -126,12 +143,6 @@ export function NewClientForm({ onSubmit, isLoading = false }: NewClientFormProp
     }
   };
 
-  // Handle form submission
-  function processSubmit(values: NewClientFormData) {
-    const { documentFile, ...clientData } = values;
-    onSubmit(clientData, { documentFile: selectedFile });
-  }
-
   const handleCancel = () => {
     form.reset(); // Reset form fields to default values
     setSelectedFile(null);
@@ -141,7 +152,7 @@ export function NewClientForm({ onSubmit, isLoading = false }: NewClientFormProp
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(processSubmit)}>
+      <form onSubmit={handleSubmit} className="space-y-6">
         <Card className="card-ios">
           <CardHeader>
             <CardTitle className="text-h3 font-h3 text-card-foreground">New Client Registration</CardTitle>

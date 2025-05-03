@@ -1,17 +1,19 @@
-'use client';
+"use client";
 
 import type { ReactNode } from 'react';
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
-import { Skeleton } from '@/components/ui/skeleton';
+import { LoadingState } from '@/components/ui/loading-state';
 import { CustomSidebarProvider } from '@/components/providers/SidebarProvider';
+import { useLoadingTransition } from '@/hooks/useLoadingTransition';
 
 export default function AppAreaLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const showLoading = useLoadingTransition(loading);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -19,12 +21,8 @@ export default function AppAreaLayout({ children }: { children: ReactNode }) {
     }
   }, [user, loading, router]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Skeleton className="h-8 w-8 rounded-full" />
-      </div>
-    );
+  if (showLoading) {
+    return <LoadingState fullScreen message="Loading..." />;
   }
 
   if (!user) {

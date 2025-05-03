@@ -42,6 +42,7 @@ interface CustomerSearchProps {
   defaultTab?: SearchType
   onSearchComplete?: (success: boolean, message: string) => void
   placeholder?: string
+  hideSearch?: boolean
 }
 
 export function CustomerSearch({ 
@@ -53,7 +54,8 @@ export function CustomerSearch({
   newButtonText = "New Customer",
   newButtonLink = "/customers/new",
   defaultTab = "phone",
-  onSearchComplete
+  onSearchComplete,
+  hideSearch = false
 }: CustomerSearchProps) {
   const [open, setOpen] = React.useState(false)
   const [value, setValue] = React.useState("")
@@ -114,6 +116,7 @@ export function CustomerSearch({
         </motion.div>
       )}
 
+      {!hideSearch && (
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -253,6 +256,7 @@ export function CustomerSearch({
           </PopoverContent>
         </Popover>
       </motion.div>
+      )}
 
       <AnimatePresence>
         {customers.length > 0 && (

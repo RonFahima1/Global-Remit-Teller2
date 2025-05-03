@@ -1,193 +1,343 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { CustomerSearch } from "@/components/customer/CustomerSearch";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ArrowUpRight, ArrowDownLeft, History, DollarSign } from "lucide-react";
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Search, UserPlus, ArrowRight, Download, Filter, MoreVertical, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { AnimatedNumber } from '@/components/ui/animated-number';
+import { IOSSheet } from '@/components/ui/ios-sheet';
+import { NewClientForm } from '@/components/clients/NewClientForm';
+import { useToast } from '@/hooks/use-toast';
 
-// Mock data for demonstration
-const balanceHistory = [
-  { 
-    id: 1, 
-    date: '2024-03-20', 
-    type: 'Deposit',
-    amount: 1000,
+// Mock data for clients and transactions
+const mockClients = [
+  {
+    id: 'CUST1001',
+    name: 'Alex Morgan',
+    phone: '+1 555-123-4567',
+    email: 'alex.morgan@example.com',
+    balance: 1250.50,
     currency: 'USD',
-    balance: 1000,
-    status: 'Completed'
+    lastTransaction: '2024-03-15T10:30:00',
+    status: 'active',
   },
-  { 
-    id: 2, 
-    date: '2024-03-21', 
-    type: 'Withdrawal',
-    amount: -300,
-    currency: 'USD',
-    balance: 700,
-    status: 'Completed'
+  {
+    id: 'CUST1002',
+    name: 'Sarah Chen',
+    phone: '+1 555-987-6543',
+    email: 'sarah.chen@example.com',
+    balance: 875.25,
+    currency: 'EUR',
+    lastTransaction: '2024-03-14T15:45:00',
+    status: 'active',
   },
-  { 
-    id: 3, 
-    date: '2024-03-22', 
-    type: 'Deposit',
-    amount: 500,
+  {
+    id: 'CUST1003',
+    name: 'James Wilson',
+    phone: '+1 555-456-7890',
+    email: 'james.wilson@example.com',
+    balance: 2500.00,
+    currency: 'GBP',
+    lastTransaction: '2024-03-13T09:15:00',
+    status: 'active',
+  },
+];
+
+const mockTransactions = [
+  {
+    id: 'TXN1001',
+    date: '2024-03-15T10:30:00',
+    type: 'deposit',
+    amount: 500.00,
     currency: 'USD',
-    balance: 1200,
-    status: 'Completed'
+    status: 'completed',
+    description: 'Salary Deposit',
+  },
+  {
+    id: 'TXN1002',
+    date: '2024-03-14T15:45:00',
+    type: 'withdrawal',
+    amount: 200.00,
+    currency: 'EUR',
+    status: 'completed',
+    description: 'ATM Withdrawal',
+  },
+  {
+    id: 'TXN1003',
+    date: '2024-03-13T09:15:00',
+    type: 'transfer',
+    amount: 1000.00,
+    currency: 'GBP',
+    status: 'completed',
+    description: 'International Transfer',
   },
 ];
 
 export default function ClientBalancePage() {
-  const handleClientSearch = (searchParams: any) => {
-    console.log('Searching for client:', searchParams);
-  };
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedClient, setSelectedClient] = useState<any>(null);
+  const [filter, setFilter] = useState('all');
+  const [showNewClient, setShowNewClient] = useState(false);
+  const [showDemoSheet, setShowDemoSheet] = useState(false);
+  const [showNewClientSheet, setShowNewClientSheet] = useState(false);
+  const { toast } = useToast();
+  const [formKey, setFormKey] = useState(0);
+  const [selectedClientForSheet, setSelectedClientForSheet] = useState<any>(null);
+  const [showClientDetailsSheet, setShowClientDetailsSheet] = useState(false);
+
+  // Filter transactions based on selected filter
+  const filteredTransactions = mockTransactions.filter(txn => {
+    if (filter === 'all') return true;
+    return txn.type === filter;
+  });
 
   return (
-    <div className="w-full px-4 py-6">
-      <div className="w-full">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Client Balance</h1>
-            <p className="text-muted-foreground mt-1">View and manage client balances</p>
+    <div className="container mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Demo iOS Sheet Button */}
+        <button
+          className="mb-4 px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold shadow hover:bg-blue-700 transition"
+          onClick={() => setShowDemoSheet(true)}
+        >
+          Show Demo iOS Sheet
+        </button>
+        <button
+          className="mb-4 ml-4 px-4 py-2 rounded-lg bg-green-600 text-white font-semibold shadow hover:bg-green-700 transition"
+          onClick={() => setShowNewClientSheet(true)}
+        >
+          New Client (Sheet)
+        </button>
+        <IOSSheet isOpen={showDemoSheet} onClose={() => setShowDemoSheet(false)}>
+          <div className="p-8 text-center">
+            <h2 className="text-2xl font-bold mb-4">Hello from iOS Sheet!</h2>
+            <p className="mb-6">This is a demo of the animated, blurred, iOS-style modal sheet. You can put any content here.</p>
+            <button
+              className="mt-2 px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium transition"
+              onClick={() => setShowDemoSheet(false)}
+            >
+              Close
+            </button>
           </div>
-        </div>
-
-        <div className="grid lg:grid-cols-[1fr_400px] gap-6">
-          {/* Main Content */}
-          <div className="space-y-6">
-            {/* Balance Overview Cards */}
-            <div className="grid md:grid-cols-3 gap-4">
-              <Card className="border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                        <DollarSign className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Current Balance</p>
-                        <p className="text-2xl font-bold">$1,200.00</p>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Last updated: Today at 10:30 AM</p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
-                        <ArrowUpRight className="h-6 w-6 text-green-500" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Total Deposits</p>
-                        <p className="text-2xl font-bold text-green-500">$1,500.00</p>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">2 transactions this month</p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-full bg-red-500/10 flex items-center justify-center">
-                        <ArrowDownLeft className="h-6 w-6 text-red-500" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Total Withdrawals</p>
-                        <p className="text-2xl font-bold text-red-500">$300.00</p>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">1 transaction this month</p>
-                </CardContent>
-              </Card>
+        </IOSSheet>
+        <IOSSheet isOpen={showNewClientSheet} onClose={() => { setShowNewClientSheet(false); setFormKey(k => k + 1); }}>
+          <div className="p-6 max-w-lg mx-auto">
+            <h2 className="text-xl font-bold mb-4 text-center">Add New Client</h2>
+            <NewClientForm
+              key={formKey}
+              onSubmit={() => {
+                setShowNewClientSheet(false);
+                setFormKey(k => k + 1);
+                toast({
+                  title: 'Client added!',
+                  description: 'The new client was successfully created.',
+                  variant: 'default',
+                });
+              }}
+              isLoading={false}
+            />
+            <button
+              className="mt-4 w-full px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium transition"
+              onClick={() => { setShowNewClientSheet(false); setFormKey(k => k + 1); }}
+            >
+              Cancel
+            </button>
+          </div>
+        </IOSSheet>
+        <IOSSheet isOpen={showClientDetailsSheet} onClose={() => setShowClientDetailsSheet(false)}>
+          {selectedClientForSheet && (
+            <div className="p-6 max-w-lg mx-auto">
+              <h2 className="text-xl font-bold mb-4 text-center">Client Details</h2>
+              <div className="mb-4 text-center">
+                <div className="text-2xl font-semibold">{selectedClientForSheet.name}</div>
+                <div className="text-gray-500">{selectedClientForSheet.id}</div>
+                <div className="mt-2">{selectedClientForSheet.phone}</div>
+                <div className="mt-1">{selectedClientForSheet.email}</div>
+                <div className="mt-4 text-3xl font-bold">
+                  <AnimatedNumber value={selectedClientForSheet.balance} /> {selectedClientForSheet.currency}
+                </div>
+              </div>
+              <div className="flex gap-2 justify-center mt-6">
+                <button className="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold shadow hover:bg-blue-700 transition">Send Money</button>
+                <button className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium transition">Edit</button>
+              </div>
+              <button
+                className="mt-6 w-full px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium transition"
+                onClick={() => setShowClientDetailsSheet(false)}
+              >
+                Close
+              </button>
             </div>
+          )}
+        </IOSSheet>
 
-            {/* Transaction History */}
-            <Card className="border-0 shadow-lg">
+        {/* Main Content Area */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Search and Actions */}
+          <Card className="card-ios">
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="Search clients by name, ID, or phone"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 h-12"
+                  />
+                </div>
+                <Link href="/clients/new" passHref>
+                  <Button asChild className="h-12 px-6">
+                    <span>
+                  <UserPlus className="h-5 w-5 mr-2" />
+                  New Client
+                    </span>
+                </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Client Balance Overview */}
+          {selectedClient ? (
+            <Card className="card-ios">
               <CardHeader>
+                <CardTitle className="text-xl font-semibold">Balance Overview</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle>Transaction History</CardTitle>
-                    <CardDescription>Recent balance changes and transactions</CardDescription>
+                    <h3 className="text-2xl font-bold">{selectedClient.name}</h3>
+                    <p className="text-sm text-gray-500">{selectedClient.id}</p>
                   </div>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <History className="h-4 w-4" />
-                    View All
+                  <div className="text-right">
+                    <p className="text-3xl font-bold">
+                      <AnimatedNumber value={selectedClient.balance} /> {selectedClient.currency}
+                    </p>
+                    <p className="text-sm text-gray-500">Available Balance</p>
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="grid grid-cols-3 gap-4">
+                  <Button variant="outline" className="h-12">
+                    <ArrowRight className="h-5 w-5 mr-2" />
+                    Send Money
+                  </Button>
+                  <Button variant="outline" className="h-12">
+                    <Download className="h-5 w-5 mr-2" />
+                    Withdraw
+                  </Button>
+                  <Button variant="outline" className="h-12">
+                    <MoreVertical className="h-5 w-5 mr-2" />
+                    More
                   </Button>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Balance</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {balanceHistory.map((transaction) => (
-                      <TableRow key={transaction.id}>
-                        <TableCell>{transaction.date}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
-                              transaction.type === 'Deposit' ? 'bg-green-500/10' : 'bg-red-500/10'
-                            }`}>
-                              {transaction.type === 'Deposit' ? (
-                                <ArrowUpRight className={`h-4 w-4 text-green-500`} />
-                              ) : (
-                                <ArrowDownLeft className={`h-4 w-4 text-red-500`} />
-                              )}
-                            </div>
-                            {transaction.type}
-                          </div>
-                        </TableCell>
-                        <TableCell className={`${
-                          transaction.type === 'Deposit' ? 'text-green-500' : 'text-red-500'
-                        }`}>
-                          {transaction.type === 'Deposit' ? '+' : '-'}${Math.abs(transaction.amount).toFixed(2)}
-                        </TableCell>
-                        <TableCell>${transaction.balance.toFixed(2)}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
-                            {transaction.status}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
               </CardContent>
             </Card>
-          </div>
+          ) : (
+            <Card className="card-ios">
+              <CardContent className="p-6">
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Select a client to view their balance</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Customer Search Panel */}
-          <div>
-            <Card className="border-0 shadow-lg sticky top-6">
-              <CardHeader>
-                <CardTitle>Search Client</CardTitle>
-                <CardDescription>Find a client to view their balance</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <CustomerSearch
-                  onSearch={handleClientSearch}
-                  defaultTab="phone"
-                />
-              </CardContent>
-            </Card>
-          </div>
+          {/* Transaction History */}
+          <Card className="card-ios">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl font-semibold">Transaction History</CardTitle>
+                <Select value={filter} onValueChange={setFilter}>
+                  <SelectTrigger className="w-[180px] h-10">
+                    <Filter className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Filter transactions" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Transactions</SelectItem>
+                    <SelectItem value="deposit">Deposits</SelectItem>
+                    <SelectItem value="withdrawal">Withdrawals</SelectItem>
+                    <SelectItem value="transfer">Transfers</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {filteredTransactions.map((txn) => (
+                  <motion.div
+                    key={txn.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center justify-between p-4 rounded-xl bg-white/50 dark:bg-white/5 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"
+                  >
+                    <div>
+                      <p className="font-medium">{txn.description}</p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(txn.date).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <p className={cn(
+                        "font-medium",
+                        txn.type === 'deposit' ? "text-green-600" : "text-red-600"
+                      )}>
+                        {txn.type === 'deposit' ? '+' : '-'}
+                        {txn.amount.toLocaleString()} {txn.currency}
+                      </p>
+                      <ChevronRight className="h-5 w-5 text-gray-400" />
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Client List */}
+        <div className="space-y-6">
+          <Card className="card-ios">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Recent Clients</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {mockClients.map((client) => (
+                  <motion.div
+                    key={client.id}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => { setSelectedClient(client); setSelectedClientForSheet(client); setShowClientDetailsSheet(true); }}
+                    className={cn(
+                      "flex items-center justify-between p-4 rounded-xl cursor-pointer transition-colors",
+                      selectedClient?.id === client.id
+                        ? "bg-blue-50 dark:bg-blue-900/20"
+                        : "bg-white/50 dark:bg-white/5 hover:bg-blue-50 dark:hover:bg-blue-900/10"
+                    )}
+                  >
+                    <div>
+                      <p className="font-medium">{client.name}</p>
+                      <p className="text-sm text-gray-500">{client.phone}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">
+                        {client.balance.toLocaleString()} {client.currency}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(client.lastTransaction).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

@@ -1,25 +1,31 @@
-'use client';
-
 import './globals.css';
-import { AuthProvider } from '@/context/AuthContext';
-import { Toaster } from '@/components/ui/toaster';
-import { Toaster as SonnerToaster } from 'sonner';
-import { ThemeProvider } from 'next-themes';
-import { LanguageProvider } from '@/components/providers/LanguageProvider';
+import { Inter } from "next/font/google";
+import dynamic from 'next/dynamic';
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+const inter = Inter({ subsets: ["latin"] });
+
+// Dynamically import Providers so it is only used on the client
+const Providers = dynamic(
+  () => import('@/components/providers/Providers').then(mod => mod.Providers),
+  { ssr: false }
+);
+
+export const metadata = {
+  title: 'Global Remit Teller',
+  description: 'A teller and compliance platform',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
-      <body>
-        <ThemeProvider attribute="class" defaultTheme="light">
-          <LanguageProvider>
-            <AuthProvider>
-              {children}
-              <Toaster />
-              <SonnerToaster position="top-right" />
-            </AuthProvider>
-          </LanguageProvider>
-        </ThemeProvider>
+      <body className={inter.className}>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
