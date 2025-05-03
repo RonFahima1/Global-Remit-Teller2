@@ -359,40 +359,9 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
           </nav>
         </div>
         <div className="flex-1 overflow-y-auto transition-all duration-300">
-          <nav className={cn("flex flex-col gap-2", sidebarCollapsed ? "px-2" : "px-4") }>
-            {mainNav.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <div key={item.href} className="relative flex items-center">
-                  {isActive && (
-                    <motion.div
-                      layoutId="sidebar-indicator"
-                      className="absolute left-0 h-6 w-1 bg-blue-500 rounded-r"
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    />
-                  )}
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "ios-nav-link group flex items-center gap-3 px-4 relative transition-all duration-200 ease-ios",
-                      isActive && "scale-110"
-                    )}
-                    onClick={e => {
-                      e.preventDefault();
-                      window.location.href = item.href;
-                    }}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <span className="text-[15px] font-medium">{item.title}</span>
-                    <ChevronRight className={cn(
-                      "ml-auto h-5 w-5 opacity-0 transition-all duration-200 ease-ios group-hover:opacity-100",
-                      direction === "rtl" ? "group-hover:-translate-x-1" : "group-hover:translate-x-1"
-                    )} />
-                  </Link>
-                </div>
-              );
-            })}
-          </nav>
+          <div className="p-4">
+            {/* Empty div to maintain layout */}
+          </div>
         </div>
       </aside>
       </TooltipProvider>
