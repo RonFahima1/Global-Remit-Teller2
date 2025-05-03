@@ -3,6 +3,7 @@
 import React from "react";
 import { ReactNode, useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { Logo } from "@/components/ui/logo";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -233,10 +234,7 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
         <SheetContent side={direction === "rtl" ? "right" : "left"} className="w-[280px] p-0 rounded-r-2xl transition-transform duration-300 ease-ios">
           <div className="h-full ios-blur rounded-r-2xl">
             <div className="flex h-[70px] items-center px-6 border-b">
-              <Link href="/dashboard" className="flex items-center gap-3 font-bold text-xl">
-                <Banknote className="h-7 w-7" />
-                Global Remit
-              </Link>
+              <Logo size={32} isIcon={true} showText={true} className="hover:scale-105" />
             </div>
             <div className="py-6">
               <nav className="space-y-2 px-4">
@@ -281,23 +279,34 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
 
       {/* Desktop Sidebar */}
       <TooltipProvider delayDuration={0}>
-      <aside
-        className={cn(
-          "ios-sidebar hidden lg:flex flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300",
-          "bg-white/70 dark:bg-[#18181b]/80 backdrop-blur-2xl border-r border-white/30 dark:border-white/10 shadow-2xl rounded-r-3xl",
-          sidebarCollapsed ? `w-[${SIDEBAR_COLLAPSED}px]` : `w-[${SIDEBAR_EXPANDED}px]`,
-          direction === "rtl" && "left-auto right-0"
-        )}
-        style={{ width: sidebarWidth }}
-      >
+        <aside
+          className={cn(
+            "ios-sidebar fixed inset-y-0 left-0 z-50 transition-all duration-300 flex flex-col",
+            "bg-white/70 dark:bg-[#18181b]/80 backdrop-blur-2xl border-r border-white/30 dark:border-white/10 shadow-2xl rounded-r-3xl",
+            sidebarCollapsed ? `w-[${SIDEBAR_COLLAPSED}px]` : `w-[${SIDEBAR_EXPANDED}px]`,
+            direction === "rtl" && "left-auto right-0",
+            "lg:block hidden"
+          )}
+          style={{ width: sidebarWidth }}
+        >
         <div className={cn(
           "flex items-center border-b border-border/30 transition-all duration-300",
           sidebarCollapsed ? "h-[70px] px-3 justify-center" : "h-[80px] px-8 justify-start"
         )}>
-          <Link href="/dashboard" className={cn("flex items-center gap-4", sidebarCollapsed && "justify-center w-full") }>
-            <Banknote className="h-8 w-8 text-primary drop-shadow" />
-            {!sidebarCollapsed && <span className="font-bold text-2xl ios-gradient-text tracking-tight">Global Remit</span>}
-          </Link>
+          <div 
+            className={cn("flex items-center gap-2 cursor-pointer", sidebarCollapsed && "justify-center w-full") }
+          >
+            <Logo 
+              size={sidebarCollapsed ? 32 : 40} 
+              isIcon={sidebarCollapsed} 
+              showText={!sidebarCollapsed} 
+              className="hover:scale-105" 
+              onClick={() => {
+                setSidebarCollapsed(!sidebarCollapsed);
+                localStorage.setItem(SIDEBAR_COLLAPSE_KEY, String(!sidebarCollapsed));
+              }}
+            />
+          </div>
         </div>
         <div className={cn("flex-1 overflow-y-auto transition-all duration-300", sidebarCollapsed ? "py-4" : "py-8") }>
           <nav className={cn("flex flex-col gap-2", sidebarCollapsed ? "px-2" : "px-4") }>
@@ -349,24 +358,41 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
             })}
           </nav>
         </div>
-        {/* Collapse/Expand Button */}
-        <div className={cn("flex items-center justify-center py-4 border-t border-border/30") }>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full transition-all duration-200"
-            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            onClick={() => {
-              setSidebarCollapsed((prev) => {
-                localStorage.setItem(SIDEBAR_COLLAPSE_KEY, String(!prev));
-                return !prev;
-              });
-            }}
-          >
-            <motion.div animate={{ rotate: sidebarCollapsed ? 180 : 0 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}>
-              <ChevronRight className={cn("h-6 w-6 text-gray-500 transition-all", sidebarCollapsed && "rotate-180")}/>
-            </motion.div>
-          </Button>
+        <div className="flex-1 overflow-y-auto transition-all duration-300">
+          <nav className={cn("flex flex-col gap-2", sidebarCollapsed ? "px-2" : "px-4") }>
+            {mainNav.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <div key={item.href} className="relative flex items-center">
+                  {isActive && (
+                    <motion.div
+                      layoutId="sidebar-indicator"
+                      className="absolute left-0 h-6 w-1 bg-blue-500 rounded-r"
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    />
+                  )}
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      "ios-nav-link group flex items-center gap-3 px-4 relative transition-all duration-200 ease-ios",
+                      isActive && "scale-110"
+                    )}
+                    onClick={e => {
+                      e.preventDefault();
+                      window.location.href = item.href;
+                    }}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    <span className="text-[15px] font-medium">{item.title}</span>
+                    <ChevronRight className={cn(
+                      "ml-auto h-5 w-5 opacity-0 transition-all duration-200 ease-ios group-hover:opacity-100",
+                      direction === "rtl" ? "group-hover:-translate-x-1" : "group-hover:translate-x-1"
+                    )} />
+                  </Link>
+                </div>
+              );
+            })}
+          </nav>
         </div>
       </aside>
       </TooltipProvider>
@@ -407,15 +433,15 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
         >
           <div className="flex h-[70px] items-center justify-between gap-6 px-4 lg:px-6 w-full">
             <div className="flex items-center gap-4 flex-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="lg:hidden rounded-xl h-[40px] w-[40px] transition-colors duration-200 ease-ios active:scale-95"
-                onClick={() => setIsSidebarOpen(true)}
-              >
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle menu</span>
-              </Button>
+              <div className="lg:hidden">
+                <Logo 
+                  size={32} 
+                  isIcon={true} 
+                  showText={false} 
+                  className="hover:scale-105" 
+                  onClick={() => setIsSidebarOpen(true)}
+                />
+              </div>
               <div className="flex-1 w-full max-w-[800px]">
                 <CommandPalette />
               </div>

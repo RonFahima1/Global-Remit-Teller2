@@ -18,4 +18,12 @@ model User {
   role          String    @default("USER")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  lastLogin     DateTime?
+  status        String    @default("ACTIVE")
+  failedAttempts Int      @default(0)
+  
+  @@index([email, createdAt])
+  @@index([role, status])
+  @@index([createdAt])
+  @@index([updatedAt])
 } 

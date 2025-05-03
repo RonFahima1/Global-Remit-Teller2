@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/tooltip"
 import LoadingOverlay from '@/components/ui/LoadingOverlay'
 import { useCurrentUser, canViewReports, canApproveKYC } from '@/context/CurrentUserContext'
+import { Logo } from "@/components/ui/logo"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -220,7 +221,7 @@ const SidebarProvider = React.forwardRef<
             >
               {/* Logo or App Name (hidden on mobile) */}
               <div className="mb-10 flex items-center justify-center w-full md:block hidden">
-                <span className="text-2xl font-bold text-blue-600 tracking-tight">GR</span>
+                <Logo size={32} isIcon={true} className="hover:scale-105" />
               </div>
               {/* Navigation Links */}
               <nav className="flex flex-col gap-3 w-full px-4 mt-4 md:mt-0">

@@ -4,6 +4,8 @@ import { useAuth } from '@/context/AuthContext';
 import { useEffect, useState } from 'react';
 import { Banknote } from "lucide-react";
 import { Button } from '@/components/ui/button';
+import { cn } from "@/lib/utils";
+import { Logo } from "@/components/ui/logo";
 import { Input } from '@/components/ui/input';
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -70,20 +72,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-start justify-center bg-gradient-to-br from-[#F2F2F7] to-white pt-8 sm:pt-20 font-['-apple-system','BlinkMacSystemFont','SF Pro Text',sans-serif]">
-      <div className="flex flex-col md:flex-row w-full max-w-4xl md:rounded-3xl rounded-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.1)] overflow-hidden bg-white/0 md:min-h-[650px] min-h-[80vh] mx-2">
+    <div className="min-h-screen flex items-start justify-center bg-gradient-to-br from-[#F5F5F7] to-[#E5E5EA] pt-8 sm:pt-20 font-['-apple-system','BlinkMacSystemFont','SF Pro Text',sans-serif]">
+      <div className="flex flex-col md:flex-row w-full max-w-5xl md:rounded-2xl rounded-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.1)] overflow-hidden bg-white/0 md:min-h-[350px] min-h-[55vh] mx-4">
         {/* Left: Blue Panel */}
-        <div className="flex-1 bg-gradient-to-br from-[#007AFF] to-blue-500 text-white flex flex-col justify-between p-4 sm:p-8 md:p-14 relative md:rounded-none rounded-t-xl md:rounded-l-3xl shadow-[0_8px_32px_0_rgba(31,38,135,0.08)]">
+        <div className="flex-1 bg-gradient-to-br from-[#0A84FF] to-[#007AFF] text-white flex flex-col justify-between p-4 sm:p-8 md:p-14 relative md:rounded-none rounded-t-xl md:rounded-l-3xl shadow-[0_8px_32px_0_rgba(10,132,255,0.1)] backdrop-blur-sm">
           {/* Top: Logo, Motto, Description */}
           <div>
-            <div className="flex items-center gap-3 mb-8">
-              <span className="p-2 rounded-xl bg-white/10 backdrop-blur-sm">
-                <Banknote className="h-8 w-8 text-white" />
-              </span>
+            <div className="flex items-center gap-3 mb-10 transition-all duration-200 hover:scale-105">
+              <img src="/app-logo.png" alt="Global Remit Logo" className="h-10 w-auto max-w-[80px]" />
               <span className="font-bold text-2xl tracking-tight">Global Remit</span>
             </div>
             <div className="text-lg font-semibold mb-2">Beyond Banking</div>
-            <div className="text-base opacity-90 mb-8">
+            <div className="text-sm text-white/80">Fast, secure international money transfers</div>
+            <div className="text-base opacity-90 mb-8 max-w-md">
               Your trusted partner for fast, secure international money transfers with competitive rates and robust compliance.
             </div>
           </div>
@@ -106,7 +107,7 @@ export default function LoginPage() {
         </div>
         {/* Right: Login Form */}
         <div className="flex-1 flex flex-col justify-center px-4 py-8 sm:px-8 sm:py-12 md:px-12 md:py-14 bg-white">
-          <div className="w-full max-w-md mx-auto bg-white/60 backdrop-blur-xl border border-white/30 shadow-[0_8px_32px_0_rgba(31,38,135,0.1)] shadow-inner rounded-xl sm:rounded-2xl md:rounded-3xl p-4 sm:p-8 md:p-10 flex flex-col gap-8 transition-all duration-200 relative">
+          <div className="w-full max-w-md mx-auto p-4 sm:p-8 md:p-10 flex flex-col gap-10 transition-all duration-200 relative">
             {/* Top divider only (no logo) */}
             <div className="flex flex-col items-center gap-2 mb-2">
               <span className="block w-10 h-1 rounded-full bg-gray-200/70 mb-2" />
@@ -124,7 +125,7 @@ export default function LoginPage() {
                   placeholder="Enter your email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-white/80 focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/40 transition-all text-base font-medium placeholder-gray-400"
+                  className="w-full h-14 px-5 rounded-xl border border-gray-200 bg-white/80 focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/40 transition-all text-base font-medium placeholder-gray-400 hover:border-gray-300"
                   required
                   disabled={loading}
                 />
@@ -137,7 +138,7 @@ export default function LoginPage() {
                   placeholder="Enter your password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-white/80 focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/40 transition-all text-base font-medium placeholder-gray-400"
+                  className="w-full h-14 px-5 rounded-xl border border-gray-200 bg-white/80 focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/40 transition-all text-base font-medium placeholder-gray-400 hover:border-gray-300"
                   required
                   disabled={loading}
                 />
@@ -150,7 +151,7 @@ export default function LoginPage() {
               )}
               <Button
                 type="submit"
-                className="w-full rounded-xl bg-[#007AFF] text-white font-medium py-2 hover:bg-[#0064d6] active:scale-95 transition-all focus:ring-2 focus:ring-[#007AFF]/40"
+                className="w-full rounded-xl bg-[#0A84FF] text-white font-medium py-3 hover:bg-[#0064d6] active:scale-95 transition-all focus:ring-2 focus:ring-[#007AFF]/40 shadow-sm hover:shadow-md"
                 disabled={loading}
               >
                 {loading ? 'Signing in...' : 'Login as Demo User'}
@@ -163,7 +164,7 @@ export default function LoginPage() {
               </div>
               <Button
                 type="button"
-                className="w-full rounded-xl bg-white text-blue-700 border border-blue-500 py-2 hover:bg-blue-50 active:scale-95 transition-all flex items-center justify-center gap-2 focus:ring-2 focus:ring-[#007AFF]/40"
+                className="w-full rounded-xl bg-white text-blue-700 border border-blue-500 py-3 hover:bg-blue-50 active:scale-95 transition-all flex items-center justify-center gap-2 focus:ring-2 focus:ring-[#007AFF]/40 shadow-sm hover:shadow-md"
                 onClick={() => login('demo@example.com', 'demo')}
                 disabled={loading}
               >
@@ -171,8 +172,10 @@ export default function LoginPage() {
                 Sign in with Microsoft
               </Button>
             </form>
-            {/* Footer/version */}
-            <div className="mt-4 text-center text-xs text-gray-400">v.0.254.34 &copy; {new Date().getFullYear()} Global Remit</div>
+            {/* Footer */}
+            <div className="mt-4 text-center text-xs text-gray-400">
+              <span className="text-[10px] text-gray-300">© {new Date().getFullYear()} Global Remit</span>
+            </div>
           </div>
         </div>
       </div>
