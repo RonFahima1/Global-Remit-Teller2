@@ -1,27 +1,34 @@
 'use client';
 
+import React from "react";
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 
 interface LogoProps {
-  size?: number;
   className?: string;
-  isIcon?: boolean;
   showText?: boolean;
   onClick?: () => void;
 }
 
 export function Logo({ 
-  size = 32, 
   className, 
-  isIcon = false, 
-  showText = false,
+  showText = true,
   onClick 
 }: LogoProps) {
+  const [isSpinning, setIsSpinning] = React.useState(false);
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (onClick) {
+      e.preventDefault();
+      onClick();
+    }
+    setIsSpinning(true);
+    setTimeout(() => setIsSpinning(false), 1000); // Reset after 1 second animation
+  };
+
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const logoSrc = isDark ? '/logo-dark.png' : '/logo-light.png';
 
   return (
     <a
@@ -31,24 +38,18 @@ export function Logo({
         isDark ? 'text-white' : 'text-blue-600',
         className
       )}
-      onClick={(e) => {
-        if (onClick) {
-          e.preventDefault();
-          onClick();
-        }
-      }}
+      onClick={handleClick}
     >
-      <Image
-        src={logoSrc}
-        alt="Global Remit Logo"
-        width={size}
-        height={size}
-        className={cn(
-          'object-contain transition-transform duration-200',
-          'filter brightness-100'
-        )}
-        priority
-      />
+      <div className={cn(
+        'relative inline-block transition-transform duration-200',
+        isSpinning && 'animate-spin-left'
+      )}>
+        <img 
+          src={isDark ? "/app-logo.png" : "/logo-light.png"} 
+          alt="Global Remit Logo" 
+          className="h-12 w-auto max-w-[96px]" 
+        />
+      </div>
       {showText && (
         <span className="whitespace-nowrap font-bold text-2xl -ml-2">Global Remit</span>
       )}

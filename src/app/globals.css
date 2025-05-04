@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes spin-left {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.animate-spin-left {
+  animation: spin-left 1s linear infinite;
+}
+
+/* Add animation to image elements */
+img:hover {
+  transform: rotate(-360deg);
+  transition: transform 1s ease-in-out;
+}
+
 body {
   font-family: theme('fontFamily.sf-pro');
   @apply text-base; /* Use base size by default (maps to body: 17px in config) */

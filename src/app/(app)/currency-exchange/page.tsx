@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Star, ArrowRight, RefreshCw, Info } from 'lucide-react';
+import { Star, ArrowRight, RefreshCw, Info, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -92,35 +92,33 @@ export default function CurrencyExchangePage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 max-w-2xl">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <Card className="card-ios">
             <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-2xl font-bold">Currency Exchange</CardTitle>
+              <div className="flex items-center justify-between p-6 border-b border-gray-200/50 dark:border-gray-800/50">
+                <CardTitle className="text-4xl font-bold tracking-tight">Currency Exchange</CardTitle>
                 <button
                   onClick={refreshRates}
-                  className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                  className="p-2.5 rounded-full hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors duration-200"
                   disabled={isLoading}
                 >
-                  <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
-                  <span>Refresh Rates</span>
+                  <RefreshCw className={cn("h-5 w-5", isLoading && "animate-spin")} />
                 </button>
               </div>
             </CardHeader>
-            
             <CardContent className="pb-6">
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="flex flex-wrap gap-3 mb-8 pt-6 border-t border-gray-200/50 dark:border-gray-800/50">
                 {favorites.map((currency: string) => (
                   <button
                     key={currency}
                     onClick={() => toggleFavorite(currency)}
                     className={cn(
-                      "px-3 py-1 rounded-full text-sm font-medium transition-colors",
+                      "px-3 py-1.5 rounded-full text-sm font-medium transition-colors",
                       currency === fromCurrency || currency === toCurrency
                         ? "bg-blue-500 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                        : "bg-gray-100/50 text-gray-700 hover:bg-gray-200/50 dark:bg-gray-800/50 dark:text-gray-200 dark:hover:bg-gray-700/50 transition-colors duration-200"
                     )}
                   >
                     {currency}
@@ -133,7 +131,7 @@ export default function CurrencyExchangePage() {
               <div className="space-y-4">
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-gray-500">You Pay</label>
+                    <label className="text-xl font-medium text-gray-800 dark:text-gray-200">You Pay</label>
                     <div className="flex gap-4">
                       <div className="flex-1">
                         <Input
@@ -141,17 +139,17 @@ export default function CurrencyExchangePage() {
                           value={fromAmount}
                           onChange={(e) => handleFromAmountChange(e.target.value)}
                           placeholder="0.00"
-                          className="h-12 text-lg font-medium"
+                          className="w-[120px] h-14 rounded-lg text-xl font-medium focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 transition-all duration-200 border border-gray-200/50 dark:border-gray-800/50 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm rounded-lg"
                         />
                       </div>
                       <Select value={fromCurrency} onValueChange={handleFromCurrencyChange}>
                         <SelectTrigger className="w-[120px] h-12">
-                          <SelectValue />
+                          <SelectValue className="text-xl" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="border border-gray-200/50 dark:border-gray-800/50 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm shadow-sm">
                           {currencies.map((currency: { code: string; name: string; rate: number }) => (
-                            <SelectItem key={currency.code} value={currency.code}>
-                              <div className="flex items-center gap-2">
+                            <SelectItem key={currency.code} value={currency.code} className="text-xl">
+                              <div className="flex items-center gap-2.5">
                                 <span>{currency.code}</span>
                                 <button
                                   onClick={(e) => {
@@ -183,14 +181,14 @@ export default function CurrencyExchangePage() {
                           setFromAmount(calculateConversion(fromAmount, toCurrency, fromCurrency));
                         }
                       }}
-                      className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      className="p-3.5 rounded-full bg-gray-100/50 dark:bg-gray-800/50 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors duration-200"
                     >
-                      <ArrowRight className="h-5 w-5 rotate-90" />
+                      <ArrowRight className="h-8 w-8 rotate-90 transition-transform duration-200 hover:scale-110" />
                     </button>
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-gray-500">You Receive</label>
+                    <label className="text-xl font-medium text-gray-800 dark:text-gray-200">You Receive</label>
                     <div className="flex gap-4">
                       <div className="flex-1">
                         <Input
@@ -198,17 +196,17 @@ export default function CurrencyExchangePage() {
                           value={toAmount}
                           onChange={(e) => handleToAmountChange(e.target.value)}
                           placeholder="0.00"
-                          className="h-12 text-lg font-medium"
+                          className="w-[120px] h-14 rounded-lg text-xl font-medium focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 transition-all duration-200 border border-gray-200/50 dark:border-gray-800/50 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm rounded-lg"
                         />
                       </div>
                       <Select value={toCurrency} onValueChange={handleToCurrencyChange}>
                         <SelectTrigger className="w-[120px] h-12">
-                          <SelectValue />
+                          <SelectValue className="text-xl" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="border border-gray-200/50 dark:border-gray-800/50 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm shadow-sm">
                           {currencies.map((currency: { code: string; name: string; rate: number }) => (
-                            <SelectItem key={currency.code} value={currency.code}>
-                              <div className="flex items-center gap-2">
+                            <SelectItem key={currency.code} value={currency.code} className="text-xl">
+                              <div className="flex items-center gap-2.5">
                                 <span>{currency.code}</span>
                                 <button
                                   onClick={(e) => {
@@ -235,13 +233,20 @@ export default function CurrencyExchangePage() {
               <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4">
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Exchange Rate</p>
-                    <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                    <div className="mt-6 text-sm text-gray-600 dark:text-gray-300">Exchange Rate</div>
+                    <p className="text-xl font-medium text-blue-600 dark:text-blue-400">
                       1 {fromCurrency} = {rate} {toCurrency}
                     </p>
                   </div>
-                  <div className="text-sm text-gray-500">
-                    Last updated: {lastUpdated.toLocaleTimeString()}
+                  <div className="mt-4 flex flex-col gap-2 text-sm text-gray-600 dark:text-gray-300">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-5 w-5" />
+                      <span>Last updated: {new Date(lastUpdated).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <ArrowRight className="h-5 w-5 rotate-90" />
+                      <span>Exchange Rate: 1 {fromCurrency} = {rate.toFixed(4)} {toCurrency}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -284,21 +289,6 @@ export default function CurrencyExchangePage() {
                       <div key={currency.code} className="flex justify-between items-center">
                         <span className="text-sm">{currency.code}</span>
                         <span className="font-medium">{currency.rate.toFixed(4)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <h4 className="font-semibold">Market Insights</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Current market trends indicate a slight increase in EUR value against USD. 
-                    Consider locking in rates for larger transactions.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         <div className="flex gap-4 pt-4">

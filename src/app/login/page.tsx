@@ -79,7 +79,9 @@ export default function LoginPage() {
           {/* Top: Logo, Motto, Description */}
           <div>
             <div className="flex items-center gap-3 mb-10 transition-all duration-200 hover:scale-105">
-              <img src="/app-logo.png" alt="Global Remit Logo" className="h-10 w-auto max-w-[80px]" />
+              <div className="relative inline-block transition-transform duration-200">
+                <img src="/app-logo.png" alt="Global Remit Logo" className="h-12 w-auto max-w-[96px]" />
+              </div>
               <span className="font-bold text-2xl tracking-tight">Global Remit</span>
             </div>
             <div className="text-lg font-semibold mb-2">Beyond Banking</div>

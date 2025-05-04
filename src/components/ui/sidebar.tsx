@@ -60,15 +60,15 @@ const settingsLinks = [
 ];
 
 const navLinks = [
-  { href: "/dashboard", label: "Home", icon: Home },
-  { href: "/send-money", label: "Send Money", icon: Send },
-  { href: "/currency-exchange", label: "Currency Exchange", icon: RefreshCw },
-  { href: "/client-balance", label: "Client Balance", icon: Users },
-  { href: "/cash-register", label: "Cash Register", icon: DollarSign },
-  { href: "/transactions", label: "Transactions", icon: List },
-  { href: "/payout", label: "Payout", icon: CreditCard },
-  { href: "/settings", label: "Settings", icon: Settings },
-  { href: "/admin", label: "Administration", icon: Cog }, // Always visible!
+  { href: "/dashboard", label: "Home", icon: Home, iconSize: 18 },
+  { href: "/send-money", label: "Send Money", icon: Send, iconSize: 18 },
+  { href: "/currency-exchange", label: "Currency Exchange", icon: RefreshCw, iconSize: 18 },
+  { href: "/client-balance", label: "Client Balance", icon: Users, iconSize: 18 },
+  { href: "/cash-register", label: "Cash Register", icon: DollarSign, iconSize: 18 },
+  { href: "/transactions", label: "Transactions", icon: List, iconSize: 18 },
+  { href: "/payout", label: "Payout", icon: CreditCard, iconSize: 18 },
+  { href: "/settings", label: "Settings", icon: Settings, iconSize: 18 },
+  { href: "/admin", label: "Administration", icon: Cog, iconSize: 18 }, // Always visible!
 ];
 
 const mockUser = {
@@ -191,7 +191,7 @@ const SidebarProvider = React.forwardRef<
                   onClick={toggleSidebar}
                   aria-label="Open sidebar"
                 >
-                  <PanelLeft className="h-6 w-6" />
+                  <PanelLeft className="h-5 w-5" />
                 </Button>
                 <span className="text-xl font-bold text-blue-600 tracking-tight">GR</span>
                 <div className="flex items-center gap-2">
@@ -209,7 +209,7 @@ const SidebarProvider = React.forwardRef<
             <aside
               className={cn(
                 "fixed z-30 top-0 left-0 h-full bg-white/80 dark:bg-[#18181b]/80 backdrop-blur-xl border-r border-white/30 dark:border-white/10 shadow-2xl transition-all duration-300 rounded-r-2xl",
-                "flex flex-col items-center py-8 gap-4",
+                "flex flex-col items-center py-4 gap-4",
                 "w-20 md:w-80",
                 open ? "md:w-80" : "md:w-20",
                 isMobile && !openMobile && "-translate-x-full",
@@ -220,8 +220,8 @@ const SidebarProvider = React.forwardRef<
               data-state={state}
             >
               {/* Logo or App Name (hidden on mobile) */}
-              <div className="mb-10 flex items-center justify-center w-full md:block hidden">
-                <Logo size={32} isIcon={true} className="hover:scale-105" />
+              <div className="mb-4 flex items-center justify-center w-full md:block hidden">
+                <Logo className="hover:scale-105" />
               </div>
               {/* Navigation Links */}
               <nav className="flex flex-col gap-3 w-full px-4 mt-4 md:mt-0">
@@ -234,7 +234,7 @@ const SidebarProvider = React.forwardRef<
                       open ? "justify-start" : "justify-center"
                     )}
                   >
-                    <item.icon className="h-7 w-7" />
+                    <item.icon className="h-5 w-5" />
                     {open && <span className="ml-3 text-lg">{item.label}</span>}
                   </Link>
                 ))}
@@ -250,7 +250,7 @@ const SidebarProvider = React.forwardRef<
                       open ? "justify-start" : "justify-center"
                     )}
                   >
-                    <item.icon className="h-7 w-7" />
+                    <item.icon className="h-5 w-5" />
                     {open && <span className="ml-3 text-lg">{item.label}</span>}
                   </Link>
                 ))}
@@ -274,7 +274,7 @@ const SidebarProvider = React.forwardRef<
                   onClick={toggleSidebar}
                   aria-label="Toggle sidebar"
                 >
-                  <PanelLeft className="h-6 w-6" />
+                  <PanelLeft className="h-5 w-5" />
                 </Button>
               </div>
               {/* Sidebar Toggle Button (mobile only) */}
@@ -287,7 +287,7 @@ const SidebarProvider = React.forwardRef<
                     onClick={toggleSidebar}
                     aria-label="Toggle sidebar"
                   >
-                    <PanelLeft className="h-6 w-6" />
+                    <PanelLeft className="h-5 w-5" />
                   </Button>
                 </div>
               )}
