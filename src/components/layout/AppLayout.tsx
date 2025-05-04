@@ -47,6 +47,7 @@ import { CommandPalette } from "@/components/commands/CommandPalette";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import LoadingOverlay from '@/components/ui/LoadingOverlay';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import PlasmicLoaderComponent from '@/components/plasmic/PlasmicLoader';
 
 interface NavItem {
   title: string;
@@ -531,3 +532,13 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
 };
 
 export default AppLayout;
+
+// Add Plasmic loader to the root of your app
+export function PlasmicRootProvider({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <PlasmicLoaderComponent />
+      {children}
+    </>
+  );
+}

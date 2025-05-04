@@ -289,27 +289,29 @@ export default function CurrencyExchangePage() {
                       <div key={currency.code} className="flex justify-between items-center">
                         <span className="text-sm">{currency.code}</span>
                         <span className="font-medium">{currency.rate.toFixed(4)}</span>
-        </div>
-
-        <div className="flex gap-4 pt-4">
-          <Button className="flex-1 h-12">
-            <ArrowRight className="h-5 w-5 mr-2" />
-            Exchange Now
-          </Button>
-        </div>
-        <div className="flex gap-4 pt-4">
-          <Button className="flex-1 h-12">
-            <ArrowRight className="h-5 w-5 mr-2" />
-            View Transaction History
-          </Button>
-        </div>
-        <div className="flex gap-4 pt-4">
-          <Button className="flex-1 h-12">
-            Exchange Information
-          </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex gap-4 pt-4">
+                  <Button className="flex-1 h-12">
+                    <ArrowRight className="h-5 w-5 mr-2" />
+                    Exchange Now
+                  </Button>
+                </div>
+                <div className="flex gap-4 pt-4">
+                  <Button className="flex-1 h-12">
+                    <ArrowRight className="h-5 w-5 mr-2" />
+                    View Transaction History
+                  </Button>
+                </div>
+                <div className="flex gap-4 pt-4">
+                  <Button className="flex-1 h-12">
+                    Exchange Information
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2 mt-4">
                 <p className="text-sm text-gray-500">
                   Rates are updated every 60 seconds. The final rate will be locked in when you confirm the exchange.
                 </p>
@@ -323,4 +325,4 @@ export default function CurrencyExchangePage() {
       </div>
     </div>
   );
-} 
+}
