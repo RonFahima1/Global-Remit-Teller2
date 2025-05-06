@@ -2,7 +2,7 @@ import type { Config } from "tailwindcss";
 import { fontFamily } from "tailwindcss/defaultTheme"; // Import defaultTheme
 
 const config = {
-    darkMode: ["class"],
+    darkMode: ['class'],
     content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -39,16 +39,16 @@ const config = {
         'ios-label': 'rgba(60, 60, 67, 0.6)', // Semi-transparent label color
 
         // Shadcn Theme Mapped to iOS Palette (Using CSS Variables)
-  			background: 'hsl(var(--background))', // maps to #F2F2F7 (ios-light-gray)
-  			foreground: 'hsl(var(--foreground))', // maps to #000000 (ios-primary-text)
-  			card: {
-  				DEFAULT: 'hsl(var(--card))', // maps to #FFFFFF
-  				foreground: 'hsl(var(--card-foreground))' // maps to #000000
-  			},
-  			popover: {
-  				DEFAULT: 'hsl(var(--popover))', // maps to #FFFFFF
-  				foreground: 'hsl(var(--popover-foreground))' // maps to #000000
-  			},
+        background: 'hsl(var(--background))', // maps to #F2F2F7 (ios-light-gray)
+        foreground: 'hsl(var(--foreground))', // maps to #000000 (ios-primary-text)
+        card: {
+          DEFAULT: 'hsl(var(--card))', // maps to #FFFFFF
+          foreground: 'hsl(var(--card-foreground))' // maps to #000000
+        },
+        popover: {
+          DEFAULT: 'hsl(var(--popover))', // maps to #FFFFFF
+          foreground: 'hsl(var(--popover-foreground))' // maps to #000000
+        },
   			primary: {
   				DEFAULT: 'hsl(var(--primary))', // maps to #0A84FF (ios-blue)
   				foreground: 'hsl(var(--primary-foreground))' // maps to #FFFFFF
@@ -69,9 +69,9 @@ const config = {
   				DEFAULT: 'hsl(var(--destructive))', // maps to #FF3B30 (ios-red)
   				foreground: 'hsl(var(--destructive-foreground))' // maps to #FFFFFF
   			},
-  			border: 'hsl(var(--border))', // maps to #C6C6C8 (ios-divider)
-  			input: 'hsl(var(--input))', // maps to #F2F2F7 (ios-light-gray background for inputs)
-  			ring: 'hsl(var(--ring))', // maps to #0A84FF (ios-blue for focus rings)
+        border: 'hsl(var(--border))', // maps to #C6C6C8 (ios-divider)
+        input: 'hsl(var(--input))', // maps to #F2F2F7 (ios-light-gray background for inputs)
+        ring: 'hsl(var(--ring))', // maps to #0A84FF (ios-blue for focus rings)
   			chart: {
   				'1': 'hsl(var(--chart-1))',
   				'2': 'hsl(var(--chart-2))',
@@ -79,16 +79,16 @@ const config = {
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
   			},
-  			sidebar: { // Keep sidebar distinct or map if needed
-  				DEFAULT: 'hsl(var(--sidebar-background))',
-  				foreground: 'hsl(var(--sidebar-foreground))',
-  				primary: 'hsl(var(--sidebar-primary))',
-  				'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-  				accent: 'hsl(var(--sidebar-accent))',
-  				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-  				border: 'hsl(var(--sidebar-border))',
-  				ring: 'hsl(var(--sidebar-ring))'
-  			}
+        sidebar: {
+          DEFAULT: 'hsl(var(--sidebar-background))',
+          foreground: 'hsl(var(--sidebar-foreground))',
+          primary: 'hsl(var(--sidebar-primary))',
+          'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
+          accent: 'hsl(var(--sidebar-accent))',
+          'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
+          border: 'hsl(var(--sidebar-border))',
+          ring: 'hsl(var(--sidebar-ring))'
+        }
   		},
   		borderRadius: {
         'ios': '10px', // Standard iOS corner radius

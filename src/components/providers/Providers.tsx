@@ -9,7 +9,7 @@ import { Toaster as SonnerToaster } from 'sonner';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light">
+    <ThemeProvider attribute="class" defaultTheme="dark">
       <LanguageProvider>
         <AuthProvider>
           <CurrentUserProvider>

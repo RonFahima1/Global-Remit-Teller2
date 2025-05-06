@@ -39,6 +39,7 @@
     "@reactour/tour": "^3.0.0",
     "@types/redis": "^4.0.10",
     "bcryptjs": "^3.0.2",
+    "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "cmdk": "^1.1.1",
@@ -70,6 +71,7 @@
     "zustand": "^5.0.4"
   },
   "devDependencies": {
+    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^20",
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.1",
