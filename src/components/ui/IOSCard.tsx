@@ -49,44 +49,45 @@ export const IOSCard = ({
     : '';
   
   // Animation variants for entrance
-  const cardVariants = {
+  const entranceVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { 
       opacity: 1, 
       y: 0,
       transition: { 
         duration: 0.3,
-        delay: index * 0.1
+        delay: index * 0.05
       }
     }
   };
   
+  const CardComponent = animateEntrance ? motion.div : 'div';
+  const animationProps = animateEntrance ? {
+    variants: entranceVariants,
+    initial: "hidden",
+    animate: "visible"
+  } : {};
+  
   return (
-    <motion.div
+    <CardComponent
       className={cn(
-        'rounded-xl',
+        'rounded-xl transition-all duration-200',
         variantStyles[variant],
         paddingMap[padding],
         selectionStyles,
-        onClick && 'cursor-pointer transition-all duration-200 hover:shadow-md active:scale-[0.98]',
+        onClick ? 'cursor-pointer' : '',
         className
       )}
       onClick={onClick}
-      initial={animateEntrance ? 'hidden' : undefined}
-      animate={animateEntrance ? 'visible' : undefined}
-      variants={cardVariants}
-      whileTap={onClick ? { scale: 0.98 } : undefined}
+      {...animationProps}
     >
       {children}
-    </motion.div>
+    </CardComponent>
   );
 };
 
 // Group component for grouped cards
-export const IOSCardGroup: React.FC<{ children: React.ReactNode; className?: string }> = ({ 
-  children,
-  className
-}) => {
+export const IOSCardGroup = ({ children, className }: { children: React.ReactNode; className?: string }) => {
   return (
     <div className={cn('rounded-xl overflow-hidden', className)}>
       {children}

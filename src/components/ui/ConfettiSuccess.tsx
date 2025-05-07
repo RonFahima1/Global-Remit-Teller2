@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
+import { Printer, ArrowRight, Check, Download } from 'lucide-react';
 
 interface ConfettiSuccessProps {
   message: string;
@@ -12,6 +13,11 @@ interface ConfettiSuccessProps {
   currency?: string;
   receiverName?: string;
   onSendAnother?: () => void;
+  senderName?: string;
+  transferDate?: string;
+  referenceId?: string;
+  fee?: string;
+  totalAmount?: string;
 }
 
 export const ConfettiSuccess = ({
@@ -22,19 +28,37 @@ export const ConfettiSuccess = ({
   amount,
   currency,
   receiverName,
-  onSendAnother
+  onSendAnother,
+  senderName = 'Sender',
+  transferDate = new Date().toLocaleDateString(),
+  referenceId = Math.random().toString(36).substring(2, 10).toUpperCase(),
+  fee = '5.00',
+  totalAmount
 }: ConfettiSuccessProps) => {
   const [showConfetti, setShowConfetti] = useState(false);
-  
+  const [isPrinting, setIsPrinting] = useState(false);
+
+  // Calculate total if not provided
+  const calculatedTotal = totalAmount || (amount ? (parseFloat(amount) + parseFloat(fee)).toFixed(2) : '0.00');
+
+  // Handle print functionality
+  const handlePrint = () => {
+    setIsPrinting(true);
+    setTimeout(() => {
+      window.print();
+      setIsPrinting(false);
+    }, 100);
+  };
+
   useEffect(() => {
     // Trigger confetti after a short delay
     const timer = setTimeout(() => {
       setShowConfetti(true);
-      
+
       // Fire confetti with more modest settings
       const duration = 1500; // Reduced duration
       const end = Date.now() + duration;
-      
+
       const leftConfetti = () => {
         confetti({
           particleCount: 25, // Reduced particle count
@@ -46,7 +70,7 @@ export const ConfettiSuccess = ({
           scalar: 0.8 // Smaller confetti pieces
         });
       };
-      
+
       const rightConfetti = () => {
         confetti({
           particleCount: 25, // Reduced particle count
@@ -58,110 +82,171 @@ export const ConfettiSuccess = ({
           scalar: 0.8 // Smaller confetti pieces
         });
       };
-      
-      // Fire once immediately
+
+      // Fire confetti a few times
       leftConfetti();
       rightConfetti();
-      
-      // Then fire at intervals until duration is reached
+
+      // Set up interval for continuous confetti
       const interval = setInterval(() => {
         if (Date.now() > end) {
           return clearInterval(interval);
         }
-        
+
         leftConfetti();
         rightConfetti();
-      }, 300);
-      
-      return () => {
-        clearInterval(interval);
-      };
+      }, 250);
+
+      return () => clearInterval(interval);
     }, 300);
-    
+
     return () => clearTimeout(timer);
   }, []);
-  
+
   return (
     <AnimatePresence>
       {showConfetti && (
         <motion.div
-          className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm print:bg-white print:backdrop-blur-none"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="bg-white dark:bg-gray-900 rounded-2xl p-8 max-w-md w-full mx-4 text-center shadow-xl"
-            initial={{ scale: 0.8, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 120 }}
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-xl mx-4 overflow-hidden print:shadow-none print:max-w-full print:mx-0"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1 }}
           >
+            {/* Print Header - Only visible when printing */}
+            <div className="hidden print:block p-6 border-b border-gray-200">
+              <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-bold">Global Remit</h1>
+                <p className="text-gray-500">{transferDate}</p>
+              </div>
+            </div>
+
             <motion.div
-              className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-6"
-              initial={{ scale: 0 }}
-              animate={{ scale: [0, 1.2, 1] }}
-              transition={{ delay: 0.5, duration: 0.5 }}
+              className="p-6 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#10b981"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <motion.div
+                className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6 print:mb-2"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1, rotate: [0, 10, -10, 0] }}
+                transition={{ delay: 0.5, type: "spring", stiffness: 150 }}
               >
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-              </svg>
-            </motion.div>
-            
-            <motion.h2
-              className="text-2xl font-bold text-gray-900 dark:text-gray-50 mb-2"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 }}
-            >
-              {message || 'Success!'}
-            </motion.h2>
-            
-            <motion.p
-              className="text-gray-600 dark:text-gray-400 mb-6"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 }}
-            >
-              {description || (amount && receiverName ? 
-                `You've sent ${currency}${amount} to ${receiverName} successfully.` : 
-                'Your transaction has been completed successfully.')}
-            </motion.p>
-            
-            <motion.div
-              className="flex flex-col sm:flex-row gap-3 justify-center"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9 }}
-            >
-              {actionLabel && onActionClick && (
-                <Button 
-                  onClick={onActionClick}
-                  className="bg-[#007AFF] hover:bg-blue-600 text-white rounded-full"
+                <Check className="h-10 w-10 text-green-600" />
+              </motion.div>
+              
+              <motion.h2
+                className="text-2xl font-bold text-gray-900 mb-2"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+              >
+                {message}
+              </motion.h2>
+              
+              {description && (
+                <motion.p
+                  className="text-gray-600 mb-6"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8 }}
                 >
-                  {actionLabel}
-                </Button>
+                  {description}
+                </motion.p>
               )}
               
-              {onSendAnother && (
-                <Button 
-                  onClick={onSendAnother}
-                  variant="outline"
-                  className="rounded-full border-gray-300 dark:border-gray-700"
+              {/* iOS-style Transaction Receipt */}
+              {amount && currency && (
+                <motion.div 
+                  className="bg-gray-50 dark:bg-gray-800 rounded-xl p-5 mb-6 border border-gray-200 dark:border-gray-700 print:border-none print:p-0 print:bg-white"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9 }}
                 >
-                  Send Another
-                </Button>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Transaction Receipt</h3>
+                    <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 px-2 py-1 rounded-full">Completed</span>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">From</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{senderName}</span>
+                    </div>
+
+                    <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">To</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{receiverName}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Amount</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{currency}{amount}</span>
+                    </div>
+
+                    <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Fee</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{currency}{fee}</span>
+                    </div>
+
+                    <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Total</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{currency}{calculatedTotal}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Date</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{transferDate}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Reference ID</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{referenceId}</span>
+                    </div>
+                  </div>
+                </motion.div>
               )}
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1 }}
+                className="flex flex-col sm:flex-row gap-3 print:hidden"
+              >
+                {onSendAnother ? (
+                  <Button
+                    onClick={onSendAnother}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2"
+                  >
+                    <ArrowRight className="h-4 w-4" />
+                    Send Another
+                  </Button>
+                ) : null}
+                
+                {actionLabel && onActionClick ? (
+                  <Button
+                    onClick={onActionClick}
+                    className="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 px-6 py-3 rounded-xl font-medium"
+                  >
+                    {actionLabel}
+                  </Button>
+                ) : null}
+                
+                <Button
+                  onClick={handlePrint}
+                  disabled={isPrinting}
+                  className="sm:flex-none bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2"
+                >
+                  <Printer className="h-4 w-4" />
+                  {isPrinting ? 'Printing...' : 'Print Receipt'}
+                </Button>
+              </motion.div>
             </motion.div>
           </motion.div>
         </motion.div>

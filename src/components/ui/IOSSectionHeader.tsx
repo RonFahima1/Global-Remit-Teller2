@@ -7,44 +7,85 @@ interface IOSSectionHeaderProps {
   subtitle?: string;
   centered?: boolean;
   className?: string;
+  titleClassName?: string;
+  subtitleClassName?: string;
+  animateEntrance?: boolean;
 }
 
 export const IOSSectionHeader: React.FC<IOSSectionHeaderProps> = ({
   title,
   subtitle,
   centered = false,
-  className
+  className,
+  titleClassName,
+  subtitleClassName,
+  animateEntrance = true
 }) => {
+  const containerVariants = {
+    hidden: { opacity: 0, y: -10 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { 
+        duration: 0.3,
+        staggerChildren: 0.1
+      }
+    }
+  };
+  
+  const itemVariants = {
+    hidden: { opacity: 0, y: -5 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.3 }
+    }
+  };
+  
+  const Container = animateEntrance ? motion.div : 'div';
+  const Title = animateEntrance ? motion.h2 : 'h2';
+  const Subtitle = animateEntrance ? motion.p : 'p';
+  
+  const animationProps = animateEntrance ? {
+    variants: containerVariants,
+    initial: "hidden",
+    animate: "visible"
+  } : {};
+  
+  const childAnimationProps = animateEntrance ? {
+    variants: itemVariants
+  } : {};
+  
   return (
-    <motion.div
+    <Container 
       className={cn(
-        'space-y-1',
+        'mb-6',
         centered ? 'text-center' : '',
         className
       )}
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      {...animationProps}
     >
-      <motion.h2
-        className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3, delay: 0.1 }}
+      <Title
+        className={cn(
+          'text-2xl font-bold text-gray-900 dark:text-gray-100',
+          titleClassName
+        )}
+        {...childAnimationProps}
       >
         {title}
-      </motion.h2>
+      </Title>
       
       {subtitle && (
-        <motion.p
-          className="text-sm text-gray-500 dark:text-gray-400"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
+        <Subtitle
+          className={cn(
+            'mt-1 text-base text-gray-500 dark:text-gray-400',
+            subtitleClassName
+          )}
+          {...childAnimationProps}
         >
           {subtitle}
-        </motion.p>
+        </Subtitle>
       )}
-    </motion.div>
+    </Container>
   );
 };
