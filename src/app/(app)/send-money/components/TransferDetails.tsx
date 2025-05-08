@@ -6,13 +6,17 @@ import { IOSSegmentedControl } from '@/components/ui/IOSSegmentedControl';
 import { FormData } from '../hooks/useSendMoneyForm';
 
 interface TransferDetailsProps {
-  formData: FormData;
+  sourceOfFunds: string;
+  purposeOfTransfer: string;
+  transferType: string;
   handleSelectChange: (name: string, value: string) => void;
   errors: Record<string, string>;
 }
 
 export const TransferDetails: React.FC<TransferDetailsProps> = ({
-  formData,
+  sourceOfFunds,
+  purposeOfTransfer,
+  transferType,
   handleSelectChange,
   errors
 }) => {
@@ -62,7 +66,7 @@ export const TransferDetails: React.FC<TransferDetailsProps> = ({
                   Source of Funds
                 </label>
                 <Select
-                  value={formData.sourceOfFunds}
+                  value={sourceOfFunds}
                   onValueChange={(value) => handleSelectChange('sourceOfFunds', value)}
                 >
                   <SelectTrigger className="w-full">
@@ -87,7 +91,7 @@ export const TransferDetails: React.FC<TransferDetailsProps> = ({
                   Purpose of Transfer
                 </label>
                 <Select
-                  value={formData.purposeOfTransfer}
+                  value={purposeOfTransfer}
                   onValueChange={(value) => handleSelectChange('purposeOfTransfer', value)}
                 >
                   <SelectTrigger className="w-full">
@@ -112,7 +116,7 @@ export const TransferDetails: React.FC<TransferDetailsProps> = ({
                   Transfer Type
                 </label>
                 <Select
-                  value={formData.transferType}
+                  value={transferType}
                   onValueChange={(value) => handleSelectChange('transferType', value)}
                 >
                   <SelectTrigger className="w-full">

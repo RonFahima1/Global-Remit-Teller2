@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { z } from 'zod';
+import { User, Users, FileText, DollarSign, CheckCircle } from 'lucide-react';
 
 // Types
 export interface Client {
@@ -25,13 +27,24 @@ export interface FormData {
   amount: string;
   currency: string;
   fee: string;
+  total: string;
   exchangeRate: string;
+  recipientAmount: string;
+  sourceCurrency: string;
+  targetCurrency: string;
   termsAccepted: boolean;
+  operator: string;
 }
+
+import { LucideIcon } from 'lucide-react';
 
 export interface Step {
   title: string;
   description: string;
+  icon: LucideIcon;
+  color: string;
+  completed?: boolean;
+  showCheck?: boolean;
 }
 
 export const useSendMoneyForm = () => {
@@ -39,15 +52,40 @@ export const useSendMoneyForm = () => {
   
   // Steps configuration
   const steps: Step[] = [
-    { title: "Sender", description: "Select who is sending the money" },
-    { title: "Receiver", description: "Select who will receive the money" },
-    { title: "Details", description: "Specify transfer details" },
-    { title: "Amount", description: "Enter amount and review fees" },
-    { title: "Confirm", description: "Review and confirm transfer" }
+    { 
+      title: "Sender", 
+      description: "Select who is sending the money",
+      icon: User,
+      color: 'bg-blue-500'
+    },
+    { 
+      title: "Receiver", 
+      description: "Select who will receive the money",
+      icon: Users,
+      color: 'bg-green-500'
+    },
+    { 
+      title: "Details", 
+      description: "Specify transfer details",
+      icon: FileText,
+      color: 'bg-purple-500'
+    },
+    { 
+      title: "Amount", 
+      description: "Enter amount and review fees",
+      icon: DollarSign,
+      color: 'bg-orange-500'
+    },
+    { 
+      title: "Confirm", 
+      description: "Review and confirm transfer",
+      icon: CheckCircle,
+      color: 'bg-green-500'
+    }
   ];
   
   // Form state
-  const [activeStep, setActiveStep] = useState(1);
+  const [activeStep, setActiveStep] = useState(0);
   const [navigationDirection, setNavigationDirection] = useState<'forward' | 'backward'>('forward');
   const [transferComplete, setTransferComplete] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -136,7 +174,12 @@ export const useSendMoneyForm = () => {
     currency: 'USD',
     fee: '4.99',
     exchangeRate: '1.10',
-    termsAccepted: false
+    total: '',
+    recipientAmount: '',
+    sourceCurrency: 'USD',
+    targetCurrency: 'USD',
+    termsAccepted: false,
+    operator: ''
   };
   
   const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -212,41 +255,77 @@ export const useSendMoneyForm = () => {
     }
   };
   
+  // Define Zod schemas for validation
+  const senderSchema = z.object({
+    id: z.string().min(1),
+    name: z.string().min(2),
+    phone: z.string().min(10),
+    email: z.string().email(),
+    address: z.string().min(5),
+    country: z.string().min(2),
+    idType: z.string().min(2),
+    idNumber: z.string().min(2),
+    bankAccount: z.string().min(4),
+    status: z.string().min(2),
+    kycVerified: z.boolean(),
+    riskRating: z.string().min(2)
+  });
+
+  const formDataSchema = z.object({
+    sourceOfFunds: z.string().min(1, 'Please select a source of funds'),
+    purposeOfTransfer: z.string().min(1, 'Please select a purpose of transfer'),
+    transferType: z.string().min(1),
+    amount: z.string()
+      .min(1, 'Please enter an amount')
+      .transform(Number)
+      .pipe(z.number().positive('Amount must be greater than zero')),
+    currency: z.string().min(3, 'Please select a currency'),
+    fee: z.string().min(1),
+    total: z.string().min(1),
+    exchangeRate: z.string().min(1),
+    recipientAmount: z.string().min(1),
+    sourceCurrency: z.string().min(3, 'Please select a source currency'),
+    targetCurrency: z.string().min(3, 'Please select a target currency'),
+    termsAccepted: z.boolean().refine(val => val, 'You must accept the terms and conditions'),
+    operator: z.string().min(1, 'Please select an operator')
+  });
+
   // Validate current step
   const validateCurrentStep = (): boolean => {
     const newErrors: Record<string, string> = {};
     
-    switch (activeStep) {
-      case 1:
-        if (!selectedSender) {
-          newErrors.sender = 'Please select a sender';
-        }
-        break;
-      case 2:
-        if (!selectedReceiver) {
-          newErrors.receiver = 'Please select a receiver';
-        }
-        break;
-      case 3:
-        if (!formData.sourceOfFunds) {
-          newErrors.sourceOfFunds = 'Please select a source of funds';
-        }
-        if (!formData.purposeOfTransfer) {
-          newErrors.purposeOfTransfer = 'Please select a purpose of transfer';
-        }
-        break;
-      case 4:
-        if (!formData.amount) {
-          newErrors.amount = 'Please enter an amount';
-        } else if (parseFloat(formData.amount) <= 0) {
-          newErrors.amount = 'Amount must be greater than zero';
-        }
-        break;
-      case 5:
-        if (!formData.termsAccepted) {
-          newErrors.terms = 'You must accept the terms and conditions';
-        }
-        break;
+    try {
+      switch (activeStep) {
+        case 1:
+          if (!selectedSender) {
+            throw new Error('Please select a sender');
+          }
+          senderSchema.parse(selectedSender);
+          break;
+        case 2:
+          if (!selectedReceiver) {
+            throw new Error('Please select a receiver');
+          }
+          senderSchema.parse(selectedReceiver);
+          break;
+        case 3:
+          formDataSchema.pick({ sourceOfFunds: true, purposeOfTransfer: true }).parse(formData);
+          break;
+        case 4:
+          formDataSchema.pick({ amount: true, currency: true }).parse(formData);
+          break;
+        case 5:
+          formDataSchema.pick({ termsAccepted: true }).parse(formData);
+          break;
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        error.errors.forEach(err => {
+          newErrors[err.path[0] as string] = err.message;
+        });
+      } else if (error instanceof Error) {
+        newErrors[activeStep === 1 ? 'sender' : activeStep === 2 ? 'receiver' : 'general'] = error.message;
+      }
     }
     
     setErrors(newErrors);

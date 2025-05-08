@@ -13,6 +13,7 @@
   "dependencies": {
     "@auth/prisma-adapter": "^2.9.0",
     "@faker-js/faker": "^9.7.0",
+    "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.0.1",
     "@plasmicapp/cli": "^0.1.337",
     "@plasmicapp/loader-nextjs": "^1.0.424",
@@ -53,6 +54,7 @@
     "next-intl": "^4.1.0",
     "next-themes": "^0.2.1",
     "react": "^18.3.1",
+    "react-confetti": "^6.4.0",
     "react-countup": "^6.5.3",
     "react-day-picker": "^9.6.7",
     "react-dom": "^18.3.1",
